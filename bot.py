@@ -1,32 +1,39 @@
-import asyncio
-import aiohttp
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command, Text
+import telebot
+from mcstatus import JavaServer
 
-API_TOKEN = "8593596966:AAEaG497-PhF7aLifJZopFTI8RQny5cfoQ4"
-SERVER_IP = "sidorik4166.aternos.me:18097"
+# Токен вашего бота (замените на новый, если этот скомпрометирован!)
+TOKEN = '8593596966:AAEaG497-PhF7aLifJZopFTI8RQny5cfoQ4'
 
-bot = Bot(token=API_TOKEN)
-dp = Dispatcher()
+# Адрес сервера Aternos (хост:порт)
+SERVER_HOST = 'sidorik4166.aternos.me'
+SERVER_PORT = 18097
 
-async def get_server_status():
-    url = f"https://api.mcsrvstat.us/3/{SERVER_IP}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            if resp.status != 200:
-                return None
-            return await resp.json()
+bot = telebot.TeleBot(TOKEN)
 
-@dp.message(Command("сервер"))
-@dp.message(Text(startswith=("!сервер", "/сервер")))
-async def cmd_server(message: types.Message):
-    await message.answer("🔍 Проверяю статус сервера...")
-
-    data = await get_server_status()
+@bot.message_handler(commands=['сервер'], func=lambda message: message.text.startswith('!сервер'))
+def check_server(message):
+    try:
+        # Создаем объект сервера
+        server = JavaServer.lookup(f"{SERVER_HOST}:{SERVER_PORT}")
+        
+        # Проверяем статус
+        status = server.status()
+        
+        # Если сервер онлайн
+        online_players = status.players.online
+        max_players = status.players.max
+        response = f"Сервер работает! Онлайн: {online_players}/{max_players} игроков."
     
-    if not data or not data.get("online"):
-        await message.answer("❌ <b>Сервер выключен</b>\nЗапусти его на aternos.org", parse_mode="HTML")
-        return
+    except Exception as e:
+        # Если сервер оффлайн или ошибка (например, таймаут)
+        response = "Сервер не работает или недоступен в данный момент."
+    
+    # Отправляем ответ в чат
+    bot.reply_to(message, response)
+
+# Запуск бота в режиме long polling (для 24/7 используйте хостинг с мониторингом)
+if __name__ == '__main__':
+    bot.infinity_polling()
 
     players_online = data["players"].get("online", 0)
     players_max = data["players"].get("max", 20)
