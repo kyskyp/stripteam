@@ -1,2 +1,2 @@
-pyTelegramBotAPI==4.22.1
-mcstatus==12.1.4
+pyTelegramBotAPI
+mcstatus
