@@ -34,28 +34,3 @@ def check_server(message):
 # Запуск бота в режиме long polling (для 24/7 используйте хостинг с мониторингом)
 if __name__ == '__main__':
     bot.infinity_polling()
-
-    players_online = data["players"].get("online", 0)
-    players_max = data["players"].get("max", 20)
-    motd_lines = data["motd"]["clean"] if data.get("motd") and data["motd"].get("clean") else ["Нет MOTD"]
-    motd = "\n".join(motd_lines)
-    
-    text = (
-        f"✅ <b>Сервер работает!</b>\n\n"
-        f"🌍 IP: <code>{SERVER_IP}</code>\n"
-        f"👥 Онлайн: <b>{players_online}/{players_max}</b>\n"
-        f"📜 MOTD:\n{motd}"
-    )
-    
-    players_list = data["players"].get("list")
-    if players_list:
-        text += "\n\n👥 Игроки онлайн:\n" + "\n".join(players_list)
-
-    await message.answer(text, parse_mode="HTML")
-
-async def main():
-    print("Бот запущен на Render.com 🚀")
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
